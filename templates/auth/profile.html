@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto space-y-10">
+
+    <h1 class="text-3xl font-bold mb-6">Your Profile</h1>
+
+    <!-- BOOKINGS -->
+    <div>
+        <h2 class="text-2xl font-semibold mb-4">Your Bookings</h2>
+        {% if bookings %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for booking in bookings %}
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <div class="flex gap-4 items-center mb-3">
+                    {% if booking.listing.image %}
+                    <img src="{{ booking.listing.image.url }}" class="w-16 h-16 object-cover rounded-lg">
+                    {% else %}
+                    <div class="w-16 h-16 bg-gray-100 flex items-center justify-center text-gray-400 rounded-lg">
+                        No Image
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="font-semibold text-lg">{{ booking.listing.title }}</p>
+                        <p class="text-gray-500">${{ booking.listing.price }}</p>
+                    </div>
+                </div>
+                <p class="text-gray-600 mb-1">
+                    Dates: {{ booking.start_date }} → {{ booking.end_date }}
+                </p>
+                {% if booking.message %}
+                <p class="text-gray-600 mb-1">
+                    Message: {{ booking.message }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">You have no bookings yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- REVIEWS -->
+    <div>
+        <h2 class="text-2xl font-semibold mb-4">Your Reviews</h2>
+        {% if reviews %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for review in reviews %}
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="font-semibold text-lg">{{ review.listing.title }}</p>
+                    <p class="text-yellow-500 font-bold">{{ review.rating }}⭐</p>
+                </div>
+                <p class="text-gray-600">{{ review.comment }}</p>
+                <p class="text-gray-400 text-sm mt-2">Posted on {{ review.created_at|date:"M d, Y" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">You have not left any reviews yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

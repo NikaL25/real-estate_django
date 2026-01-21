@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto space-y-10">
+
+    <!-- PROPERTY DETAILS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- IMAGE / HERO -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {% if listing.image %}
+            <img 
+                src="{{ listing.image.url }}"
+                alt="{{ listing.title }}"
+                class="w-full h-[420px] object-cover"
+            >
+            {% else %}
+            <div class="w-full h-[420px] bg-gray-100 flex items-center justify-center text-gray-400">
+                No image available
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- DETAILS -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 md:p-8 flex flex-col">
+
+            <!-- Title & Price -->
+            <div class="mb-6">
+                <p class="text-sm uppercase tracking-wide text-gray-400 mb-1">
+                    Property for sale
+                </p>
+
+                <h1 class="text-4xl font-bold leading-tight mb-3">
+                    {{ listing.title }}
+                </h1>
+
+                <p class="text-3xl font-semibold text-blue-600 mb-2">
+                    ${{ listing.price }}
+                </p>
+
+                <p class="text-gray-500 mb-4">{{ listing.address }}</p>
+
+                <!-- OVERALL RATING -->
+                 <div class="flex items-center mb-4">
+                    {% if avg_rating %}
+                        {% for i in stars %}
+                           {% if i <= avg_rating %}
+                                <span class="text-yellow-400 text-lg">★</span>
+                            {% else %}
+                                <span class="text-gray-300 text-lg">★</span>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="ml-2 text-gray-600">{{ avg_rating|floatformat:1 }}/10</span>
+                    {% else %}
+                        <span class="text-gray-400">No ratings yet</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- FEATURES -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                <div class="bg-gray-50 rounded-xl p-4 text-center">
+                    <p class="text-sm text-gray-500">Bedrooms</p>
+                    <p class="text-xl font-semibold">{{ listing.num_bedrooms }}</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 text-center">
+                    <p class="text-sm text-gray-500">Bathrooms</p>
+                    <p class="text-xl font-semibold">{{ listing.num_bathrooms }}</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 text-center">
+                    <p class="text-sm text-gray-500">Area</p>
+                    <p class="text-xl font-semibold">{{ listing.square_footage }} sqft</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 text-center">
+                    <p class="text-sm text-gray-500">Status</p>
+                    <p class="text-xl font-semibold text-green-600">Available</p>
+                </div>
+            </div>
+
+            <!-- ACTIONS (Admin) -->
+            {% if request.user.is_staff %}
+            <div class="mt-auto pt-6 border-t border-gray-200 flex gap-4">
+                <a href="/listings/{{ listing.id }}/edit/"
+                   class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium
+                          hover:bg-blue-700 transition">
+                    Edit Listing
+                </a>
+                <a href="/listings/{{ listing.id }}/delete/"
+                   class="px-5 py-2.5 rounded-lg bg-red-50 text-red-600 font-medium
+                          hover:bg-red-100 transition">
+                    Delete
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- REVIEWS & BOOKING SIDE BY SIDE -->
+    {% if user.is_authenticated %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- REVIEW FORM -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 md:p-8 flex flex-col">
+            <h2 class="text-2xl font-bold mb-4">Leave a Review</h2>
+            <form method="post" action="{% url 'add_review' listing.id %}" class="flex flex-col">
+                {% csrf_token %}
+                {{ review_form.non_field_errors }}
+                <div class="space-y-4 flex-grow">
+                    {% for field in review_form %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ field.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-6">
+                    <button type="submit"
+                            class="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold
+                                   hover:bg-blue-700 transition">
+                        Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- BOOKING FORM -->
+       <div class="bg-white rounded-2xl shadow-sm p-6 md:p-8 flex flex-col">
+    <h2 class="text-2xl font-bold mb-4">Book this Listing</h2>
+    
+    <form method="post" action="{% url 'book_listing' listing.id %}" class="flex flex-col flex-grow">
+        {% csrf_token %}
+        {{ booking_form.non_field_errors }}
+
+        <div class="flex flex-col flex-grow space-y-4">
+            {% for field in booking_form %}
+            <div class="flex flex-col">
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ field.errors|striptags }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Кнопка внизу -->
+        <div class="mt-auto pt-4">
+            <button type="submit"
+                    class="w-full py-3 rounded-xl bg-green-600 text-white font-semibold
+                           hover:bg-green-700 transition">
+                Book Now
+            </button>
+        </div>
+    </form>
+</div>
+
+    </div>
+    {% else %}
+    <div class="text-center text-gray-600">
+        <p>
+            <a href="{% url 'register' %}" class="text-blue-600 hover:underline">Register</a> or
+            <a href="{% url 'login' %}" class="text-blue-600 hover:underline">Login</a>
+            to leave reviews and book this listing.
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- CUSTOMER REVIEWS FULL WIDTH -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 md:p-8 mt-6 w-full">
+        <h2 class="text-2xl font-bold mb-4">Customer Reviews</h2>
+        {% if reviews %}
+        <div class="space-y-4">
+            {% for review in reviews %}
+            <div class="border-b border-gray-200 pb-3">
+                <div class="flex items-center justify-between mb-1">
+                    <p class="font-semibold">{{ review.user.username }}</p>
+                    <p class="text-yellow-400 font-bold">{{ review.rating }}★</p>
+                </div>
+                <p class="text-gray-600">{{ review.comment }}</p>
+                <p class="text-gray-400 text-sm">{{ review.created_at|date:"M d, Y" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No reviews yet. Be the first to review!</p>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}
